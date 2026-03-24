@@ -1,0 +1,37 @@
+[project]
+name = "public-api"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "János Gönye",email = "janos.gonye@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi (>=0.135.2,<0.136.0)",
+    "uvicorn (>=0.42.0,<0.43.0)",
+    "pydantic[email] (>=2.12.5,<3.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "public_api", from = "src"}]
+
+[project.scripts]
+lint = "public_api.scripts:lint"
+format = "public_api.scripts:format_code"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "httpx (>=0.28.1,<0.29.0)",
+    "pytest (>=9.0.2,<10.0.0)",
+    "pylint (>=4.0.5,<5.0.0)",
+    "black (>=26.3.1,<27.0.0)",
+    "pre-commit (>=4.5.1,<5.0.0)"
+]
+
+[tool.pytest.ini_options]
+log_level = "INFO"
