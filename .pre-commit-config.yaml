@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: format-public-api
         name: Format public_api
-        entry: bash -c 'cd public_api && poetry run format'
+        entry: bash -c 'cd public_api && poetry run python scripts.py format'
         language: system
         files: ^public_api/
         types: [python]
@@ -11,8 +11,16 @@ repos:
 
       - id: lint-public-api
         name: Lint public_api
-        entry: bash -c 'cd public_api && poetry run lint'
+        entry: bash -c 'cd public_api && poetry run python scripts.py lint'
         language: system
         files: ^public_api/
         types: [python]
+        pass_filenames: false
+
+      - id: lint-user-interface
+        name: Lint user_interface
+        entry: bash -c 'cd user_interface && npm run lint'
+        language: system
+        files: ^user_interface/
+        types_or: [javascript, jsx, ts, tsx]
         pass_filenames: false

@@ -16,9 +16,7 @@ dependencies = [
 [tool.poetry]
 packages = [{include = "public_api", from = "src"}]
 
-[project.scripts]
-lint = "public_api.scripts:lint"
-format = "public_api.scripts:format_code"
+
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
