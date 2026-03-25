@@ -1,0 +1,26 @@
+services:
+  public-api:
+    build:
+      context: ./public_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./public_api/src:/app/src
+      - ./public_api/tests:/app/tests
+      - ./public_api/logs:/app/logs
+    environment:
+      - APP_CORS_ALLOW_ORIGINS=["http://localhost:5173", "http://127.0.0.1:5173"]
+      - APP_CORS_ALLOW_METHODS=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+      - APP_CORS_ALLOW_HEADERS=["*"]
+      - APP_LOG_FILE=/app/logs/public_api.log
+    restart: always
+
+  user-interface:
+    build:
+      context: ./user_interface
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./user_interface:/app
+      - /app/node_modules
+    restart: always

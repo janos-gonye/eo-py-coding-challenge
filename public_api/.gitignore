@@ -87,9 +87,6 @@ venv.bak/
 *.swp
 *.swo
 
-# Poetry
-poetry.lock
-
 # FastAPI / Uvicorn
 *.pid
 
