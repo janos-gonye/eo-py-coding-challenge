@@ -13,7 +13,9 @@ class Settings(BaseSettings):
     cors_allow_origins: list[str]
     cors_allow_methods: list[str]
     cors_allow_headers: list[str]
+    redis_url: str
     log_file: str
+    db_path: str
 
 
 settings = Settings()

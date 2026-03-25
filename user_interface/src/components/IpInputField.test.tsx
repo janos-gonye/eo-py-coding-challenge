@@ -79,7 +79,7 @@ describe('IpInputField Server Requests', () => {
 
   it('shows a success popup when the server responds with ok', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: 'Valid IP address.' }), { status: 200 }),
+      new Response(JSON.stringify({ task_status: 'processing' }), { status: 202 }),
     );
 
     render(<IpInputField />);
@@ -90,7 +90,7 @@ describe('IpInputField Server Requests', () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByText('Valid IP address.')).toBeInTheDocument();
+      expect(screen.getByText('IP address check started successfully.')).toBeInTheDocument();
     });
   });
 

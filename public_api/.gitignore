@@ -92,3 +92,11 @@ venv.bak/
 
 # App logs
 public_api.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*-journal
+*.db-wal
+*.db-shm

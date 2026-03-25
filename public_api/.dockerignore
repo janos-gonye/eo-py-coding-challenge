@@ -8,3 +8,6 @@ __pycache__
 .git
 .venv
 venv
+
+# Database
+*-journal

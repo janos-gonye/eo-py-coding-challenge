@@ -35,7 +35,7 @@ export function IpInputField() {
       });
       const data = await response.json();
       if (response.ok) {
-        setPopup({ type: 'success', message: data.message ?? 'IP address is valid.' });
+        setPopup({ type: 'success', message: 'IP address check started successfully.' });
       } else {
         const detail = Array.isArray(data.detail)
           ? data.detail.map((d: { msg: string }) => d.msg).join(' ')

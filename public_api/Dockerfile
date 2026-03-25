@@ -14,6 +14,7 @@ RUN poetry config virtualenvs.create false && \
 
 # Copy source code
 COPY src/ /app/src/
+COPY data /app/data
 
 ENV PYTHONPATH=/app/src
 EXPOSE 8000

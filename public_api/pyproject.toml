@@ -11,7 +11,10 @@ dependencies = [
     "fastapi (>=0.135.2,<0.136.0)",
     "uvicorn (>=0.42.0,<0.43.0)",
     "pydantic[email] (>=2.12.5,<3.0.0)",
-    "pydantic-settings (>=2.8.1,<3.0.0)"
+    "pydantic-settings (>=2.8.1,<3.0.0)",
+    "redis (>=5.2.1,<6.0.0)",
+    "rq (>=2.1.0,<3.0.0)",
+    "peewee (>=4.0.2,<5.0.0)"
 ]
 
 [tool.poetry]
@@ -29,6 +32,15 @@ pytest = ">=9.0.2,<10.0.0"
 pylint = ">=4.0.5,<5.0.0"
 black = ">=26.3.1,<27.0.0"
 pre-commit = ">=4.5.1,<5.0.0"
+pytest-env = "^1.6.0"
 
 [tool.pytest.ini_options]
 log_level = "INFO"
+env = [
+    "APP_CORS_ALLOW_ORIGINS=[\"http://localhost\"]",
+    "APP_CORS_ALLOW_METHODS=[\"*\"]",
+    "APP_CORS_ALLOW_HEADERS=[\"*\"]",
+    "APP_REDIS_URL=redis://localhost:6379/0",
+    "APP_LOG_FILE=logs/test.log",
+    "APP_DB_PATH=data/test_ip_verif.db"
+]

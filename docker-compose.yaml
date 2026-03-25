@@ -8,11 +8,36 @@ services:
       - ./public_api/src:/app/src
       - ./public_api/tests:/app/tests
       - ./public_api/logs:/app/logs
+      - ./public_api/data:/app/data
     environment:
       - APP_CORS_ALLOW_ORIGINS=["http://localhost:5173", "http://127.0.0.1:5173"]
       - APP_CORS_ALLOW_METHODS=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
       - APP_CORS_ALLOW_HEADERS=["*"]
       - APP_LOG_FILE=/app/logs/public_api.log
+      - APP_REDIS_URL=redis://redis:6379/0
+      - APP_DB_PATH=/app/data/ip_verification.db
+    depends_on:
+      - redis
+    restart: always
+
+  worker:
+    build:
+      context: ./public_api
+    command: rq worker --url redis://redis:6379/0 default
+    volumes:
+      - ./public_api/src:/app/src
+      - ./public_api/data:/app/data
+    environment:
+      - APP_REDIS_URL=redis://redis:6379/0
+      - APP_DB_PATH=/app/data/ip_verification.db
+    depends_on:
+      - redis
+    restart: always
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
     restart: always
 
   user-interface:
