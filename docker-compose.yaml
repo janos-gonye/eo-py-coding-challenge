@@ -16,6 +16,8 @@ services:
       - APP_LOG_FILE=/app/logs/public_api.log
       - APP_REDIS_URL=redis://redis:6379/0
       - APP_DB_PATH=/app/data/ip_verification.db
+      - APP_VIRUSTOTAL_ENDPOINT=https://www.virustotal.com/api/v3/ip_addresses/{ip}
+      - APP_API_KEY_VIRUSTOTAL=${APP_API_KEY_VIRUSTOTAL}
     depends_on:
       - redis
     restart: always
@@ -27,9 +29,16 @@ services:
     volumes:
       - ./public_api/src:/app/src
       - ./public_api/data:/app/data
+      - ./public_api/logs:/app/logs
     environment:
+      - APP_CORS_ALLOW_ORIGINS=["http://localhost:5173", "http://127.0.0.1:5173"]
+      - APP_CORS_ALLOW_METHODS=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+      - APP_CORS_ALLOW_HEADERS=["*"]
+      - APP_LOG_FILE=/app/logs/public_api.log
       - APP_REDIS_URL=redis://redis:6379/0
       - APP_DB_PATH=/app/data/ip_verification.db
+      - APP_VIRUSTOTAL_ENDPOINT=https://www.virustotal.com/api/v3/ip_addresses/{ip}
+      - APP_API_KEY_VIRUSTOTAL=${APP_API_KEY_VIRUSTOTAL}
     depends_on:
       - redis
     restart: always

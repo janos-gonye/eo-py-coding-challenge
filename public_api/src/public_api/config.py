@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     redis_url: str
     log_file: str
     db_path: str
+    api_key_virustotal: str
+    virustotal_endpoint: str
 
 
 settings = Settings()
