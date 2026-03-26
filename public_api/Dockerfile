@@ -6,7 +6,7 @@ WORKDIR /app
 RUN pip install --no-cache-dir poetry==2.0.1
 
 # Copy dependency files
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml poetry.lock scripts.py ./
 
 # Configure poetry to install to system python
 RUN poetry config virtualenvs.create false && \
