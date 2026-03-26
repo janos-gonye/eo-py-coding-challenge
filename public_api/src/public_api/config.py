@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment variables."""
+    """API settings loaded from environment variables."""
 
     model_config = SettingsConfigDict(env_prefix="APP_", case_sensitive=False)
 
@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     db_path: str
     api_key_virustotal: str
     virustotal_endpoint: str
+    api_key_gemini: str
+    gemini_model: str
 
 
 settings = Settings()

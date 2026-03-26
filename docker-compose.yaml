@@ -17,7 +17,9 @@ services:
       - APP_REDIS_URL=redis://redis:6379/0
       - APP_DB_PATH=/app/data/ip_verification.db
       - APP_VIRUSTOTAL_ENDPOINT=https://www.virustotal.com/api/v3/ip_addresses/{ip}
+      - APP_GEMINI_MODEL=gemini-2.5-flash
       - APP_API_KEY_VIRUSTOTAL=${APP_API_KEY_VIRUSTOTAL}
+      - APP_API_KEY_GEMINI=${APP_API_KEY_GEMINI}
     depends_on:
       - redis
     restart: always
@@ -38,7 +40,9 @@ services:
       - APP_REDIS_URL=redis://redis:6379/0
       - APP_DB_PATH=/app/data/ip_verification.db
       - APP_VIRUSTOTAL_ENDPOINT=https://www.virustotal.com/api/v3/ip_addresses/{ip}
+      - APP_GEMINI_MODEL=gemini-2.5-flash
       - APP_API_KEY_VIRUSTOTAL=${APP_API_KEY_VIRUSTOTAL}
+      - APP_API_KEY_GEMINI=${APP_API_KEY_GEMINI}
     depends_on:
       - redis
     restart: always

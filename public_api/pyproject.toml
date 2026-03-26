@@ -15,7 +15,8 @@ dependencies = [
     "redis (>=5.2.1,<6.0.0)",
     "rq (>=2.1.0,<3.0.0)",
     "peewee (>=4.0.2,<5.0.0)",
-    "httpx (>=0.28.1,<0.29.0)"
+    "httpx (>=0.28.1,<0.29.0)",
+    "google-genai (>=1.68.0,<2.0.0)"
 ]
 
 [tool.poetry]
@@ -44,5 +45,7 @@ env = [
     "APP_LOG_FILE=logs/test.log",
     "APP_DB_PATH=data/test_ip_verif.db",
     "APP_API_KEY_VIRUSTOTAL=test_api_key",
-    "APP_VIRUSTOTAL_ENDPOINT=https://example.com/api/{{ip}}"
+    "APP_VIRUSTOTAL_ENDPOINT=https://example.com/api/{{ip}}",
+    "APP_API_KEY_GEMINI=test_gemini_key",
+    "APP_GEMINI_MODEL=gemini-2.5-flash"
 ]
