@@ -4,6 +4,7 @@ Tests for the IP validation endpoints.
 
 import logging
 import uuid
+from datetime import datetime, timezone, timedelta
 from unittest.mock import patch
 
 import pytest
@@ -80,3 +81,25 @@ def test_check_ip_invalid(
     )
     assert "[Task Queued]" not in caplog.text
     mock_queue.enqueue.assert_not_called()
+
+
+def test_list_ip_checks(client):  # pylint: disable=redefined-outer-name
+    """Test listing IP check records."""
+    now = datetime.now(timezone.utc)
+    IPCheck.create(
+        id=uuid.uuid4(), ip_address="1.1.1.1", created_at=now - timedelta(minutes=1)
+    )
+    IPCheck.create(id=uuid.uuid4(), ip_address="2.2.2.2", created_at=now)
+
+    response = client.get("/ip/list")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) >= 2
+
+    # The newest should be first.
+    record_ips = [item["ip_address"] for item in data]
+    # "2.2.2.2" should appear before "1.1.1.1"
+    idx2 = record_ips.index("2.2.2.2")
+    idx1 = record_ips.index("1.1.1.1")
+    assert idx2 < idx1
