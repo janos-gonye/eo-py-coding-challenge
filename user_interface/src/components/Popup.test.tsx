@@ -45,4 +45,11 @@ describe('Popup', () => {
     fireEvent.click(container.querySelector('.popup-card')!);
     expect(onClose).not.toHaveBeenCalled();
   });
+
+  it('calls onClose when the Enter key is pressed', () => {
+    const onClose = vi.fn();
+    render(<Popup type="success" message="OK" onClose={onClose} />);
+    fireEvent.keyDown(window, { key: 'Enter' });
+    expect(onClose).toHaveBeenCalledOnce();
+  });
 });

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import './Popup.css';
 
 interface PopupProps {
@@ -7,6 +8,16 @@ interface PopupProps {
 }
 
 export function Popup({ message, type, onClose }: PopupProps) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   return (
     <div className="popup-overlay" onClick={onClose}>
       <div

@@ -161,4 +161,21 @@ describe('IpInputField Server Requests', () => {
 
     expect(fetchSpy).not.toHaveBeenCalled();
   });
+
+  it('submits the form when Enter key is pressed in the input field', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ task_status: 'processing' }), { status: 202 }),
+    );
+
+    render(<IpInputField />);
+    const input = screen.getByPlaceholderText('IP address');
+    fireEvent.change(input, { target: { value: '192.168.1.1' } });
+
+    // Simulate pressing Enter on the input
+    fireEvent.submit(input);
+
+    await waitFor(() => {
+      expect(screen.getByText('IP address check started successfully.')).toBeInTheDocument();
+    });
+  });
 });

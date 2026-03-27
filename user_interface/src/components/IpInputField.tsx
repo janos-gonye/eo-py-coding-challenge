@@ -58,7 +58,13 @@ export function IpInputField() {
           onClose={() => setPopup(null)}
         />
       )}
-      <div className="input-row">
+      <form
+        className="input-row"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSendRequest();
+        }}
+      >
         <div className="input-wrapper">
           <input
             type="text"
@@ -82,8 +88,7 @@ export function IpInputField() {
           </div>
         </div>
         <button
-          type="button"
-          onClick={handleSendRequest}
+          type="submit"
           disabled={!valid || ipAddress === ''}
           className="send-button"
         >
@@ -92,7 +97,7 @@ export function IpInputField() {
           </svg>
           <span>Send</span>
         </button>
-      </div>
+      </form>
     </>
   );
 }
