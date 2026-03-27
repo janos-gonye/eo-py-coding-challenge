@@ -44,9 +44,12 @@
 
 .item-header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.5rem;
+  gap: 0.5rem 1rem;
+  min-width: 0;
 }
 
 .ip-address {
@@ -54,6 +57,9 @@
   font-size: 1.1rem;
   color: var(--text-primary);
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: visible;
+  flex: 1 0 auto;
 }
 
 .status-badge {
@@ -61,6 +67,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0.75rem;
+  flex-shrink: 0;
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -120,6 +127,7 @@
   font-size: 0.85rem;
   line-height: 1.5;
   color: #e2e8f0;
+  overflow-wrap: anywhere;
 }
 
 .status-icon {

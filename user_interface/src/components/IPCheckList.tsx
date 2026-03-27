@@ -85,7 +85,7 @@ export function IPCheckList() {
           className={`ip-check-item ${check.task_status === 'success' ? 'item-success' : ''}`}
         >
           <div className="item-header">
-            <span className="ip-address">{check.ip_address}</span>
+            <span className="ip-address" title={check.ip_address}>{check.ip_address}</span>
             <div className={`status-badge badge-${check.task_status}`}>
               {getStatusIcon(check.task_status)}
               <span>{getStatusText(check.task_status)}</span>

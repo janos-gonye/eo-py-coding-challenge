@@ -50,6 +50,8 @@ describe('IPCheckList Component', () => {
 
     expect(screen.getByText('192.168.1.1')).toBeInTheDocument();
     expect(screen.getByText('8.8.8.8')).toBeInTheDocument();
+    expect(screen.getByText('192.168.1.1').getAttribute('title')).toBe('192.168.1.1');
+    expect(screen.getByText('8.8.8.8').getAttribute('title')).toBe('8.8.8.8');
     expect(screen.getByText('Pending')).toBeInTheDocument();
     expect(screen.getByText('Success')).toBeInTheDocument();
   });
