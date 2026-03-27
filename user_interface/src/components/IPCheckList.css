@@ -29,6 +29,7 @@
   border-radius: 16px;
   margin-bottom: 1rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: card-entrance 0.5s ease-out forwards, highlight-pulse 2s ease-out forwards;
 }
 
 .ip-check-item:hover {
@@ -142,6 +143,35 @@
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+@keyframes card-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes highlight-pulse {
+  0% {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.4);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  }
+  50% {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 20px 8px rgba(99, 102, 241, 0.12);
+  }
+  100% {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+  }
 }
 
 .no-checks-message {
