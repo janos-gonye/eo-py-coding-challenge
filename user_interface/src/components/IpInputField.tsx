@@ -62,7 +62,7 @@ export function IpInputField() {
         <div className="input-wrapper">
           <input
             type="text"
-            className={`ip-input ${touched ? (valid ? 'valid' : 'invalid') : ''}`}
+            className={`ip-input ${touched && ipAddress !== '' ? (valid ? 'valid' : 'invalid') : ''}`}
             placeholder="IP address"
             value={ipAddress}
             onChange={handleInputChange}

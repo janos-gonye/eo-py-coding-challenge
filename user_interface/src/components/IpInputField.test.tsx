@@ -70,6 +70,22 @@ describe('IpInputField Validation', () => {
     expect(svg).toBeInTheDocument();
     expect(svg).toHaveClass('error');
   });
+
+  it('removes the invalid class when the input is cleared after being touched', () => {
+    render(<IpInputField />);
+    const input = screen.getByPlaceholderText('IP address');
+
+    // Type something to make it touched and invalid
+    fireEvent.change(input, { target: { value: 'a' } });
+    expect(input).toHaveClass('invalid');
+
+    // Clear the input
+    fireEvent.change(input, { target: { value: '' } });
+    
+    // It should NO LONGER have the invalid class
+    expect(input).not.toHaveClass('invalid');
+    expect(input).not.toHaveClass('valid');
+  });
 });
 
 describe('IpInputField Server Requests', () => {
