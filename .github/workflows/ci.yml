@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Added to handle amended/force-pushed commits efficiently
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  # --- Backend Jobs ---
+  lint-backend:
+    name: Backend Linter (pre-commit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 2.0.1
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: |
+          cd public_api
+          poetry install
+
+      - name: Run Backend Lint
+        run: |
+          pip install pre-commit
+          pre-commit run lint-public-api --all-files
+
+  test-backend:
+    name: Backend Tests (Docker)
+    needs: [lint-backend, lint-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Backend Image
+        run: |
+          docker build -t public-api ./public_api
+
+      - name: Run Backend Tests
+        run: |
+          docker run --rm public-api poetry run pytest
+
+  # --- Frontend Jobs ---
+  lint-frontend:
+    name: Frontend Linter (pre-commit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: 'npm'
+          cache-dependency-path: user_interface/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd user_interface
+          npm install
+
+      - name: Set up Python (for pre-commit)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run Frontend Lint
+        run: |
+          pip install pre-commit
+          pre-commit run lint-user-interface --all-files
+
+  test-frontend:
+    name: Frontend Tests (Docker)
+    needs: [lint-backend, lint-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Frontend Image
+        run: |
+          docker build -t user-interface ./user_interface
+
+      - name: Run Frontend Tests
+        run: |
+          docker run --rm user-interface npx vitest run
