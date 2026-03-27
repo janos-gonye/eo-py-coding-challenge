@@ -95,7 +95,7 @@ export function IPCheckList() {
           <div className="ip-date">
             Checked on {new Date(check.created_at).toLocaleString(undefined, {
               dateStyle: 'medium',
-              timeStyle: 'short'
+              timeStyle: 'medium'
             })}
           </div>
 
