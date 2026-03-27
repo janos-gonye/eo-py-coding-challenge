@@ -2,15 +2,20 @@
 Worker tasks for RQ.
 """
 
+import json
 import logging
 import uuid
+
 import httpx
 from google import genai
 from peewee import DoesNotExist
+from playhouse.shortcuts import model_to_dict
 
 from public_api.app_logging import setup_logging
 from public_api.models import IPCheck
 from public_api.config import settings
+from public_api.queue import redis_conn
+from public_api.ws import IP_CHECK_STATUS_UPDATES
 
 setup_logging()
 
@@ -72,6 +77,10 @@ def process_ip_check(record_id: str, ip_address: str) -> None:
         record.task_status = "processing"
         record.save()
 
+        redis_conn.publish(
+            IP_CHECK_STATUS_UPDATES, json.dumps(model_to_dict(record), default=str)
+        )
+
         report_data = get_virustotal_report(ip_address)
         verdict = get_gemini_verdict(report_data)
 
@@ -79,6 +88,11 @@ def process_ip_check(record_id: str, ip_address: str) -> None:
         record.verdict = verdict
         record.task_status = "success"
         record.save()
+
+        redis_conn.publish(
+            IP_CHECK_STATUS_UPDATES, json.dumps(model_to_dict(record), default=str)
+        )
+
         logger.info("Successfully processed IP and stored record: %s", ip_address)
 
     except Exception as e:  # pylint: disable=broad-exception-caught
@@ -87,5 +101,9 @@ def process_ip_check(record_id: str, ip_address: str) -> None:
             record = IPCheck.get_by_id(uuid.UUID(record_id))
             record.task_status = "failed"
             record.save()
+
+            redis_conn.publish(
+                IP_CHECK_STATUS_UPDATES, json.dumps(model_to_dict(record), default=str)
+            )
         except DoesNotExist:
             logger.error("Record %s not found for error status update", record_id)

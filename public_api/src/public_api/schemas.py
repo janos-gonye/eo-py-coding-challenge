@@ -1,3 +1,7 @@
+"""
+Data schemas and Pydantic models.
+"""
+
 import uuid
 from datetime import datetime
 

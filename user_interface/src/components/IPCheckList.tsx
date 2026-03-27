@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getServerUrl } from '../utils/apiUtils';
+import { getServerUrl, getWebSocketUrl } from '../utils/apiUtils';
 import './IPCheckList.css';
 
 interface IPCheckItem {
@@ -30,8 +30,52 @@ export function IPCheckList() {
 
   useEffect(() => {
     fetchChecks();
-    const interval = setInterval(fetchChecks, 1000);
-    return () => clearInterval(interval);
+    let socket: WebSocket | null = null;
+    let reconnectionTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const connectWebSocket = () => {
+      const wsUrl = getWebSocketUrl();
+      socket = new WebSocket(wsUrl);
+
+      socket.onmessage = (event) => {
+        try {
+          const updatedItem = JSON.parse(event.data);
+          setChecks((prevChecks) => {
+            const exists = prevChecks.some((item) => item.id === updatedItem.id);
+            if (exists) {
+              return prevChecks.map((item) =>
+                item.id === updatedItem.id ? { ...item, ...updatedItem } : item
+              );
+            } else {
+              // Add new item to the beginning of the list
+              return [updatedItem, ...prevChecks];
+            }
+          });
+        } catch (error) {
+          console.error('Failed to parse WebSocket message:', error);
+        }
+      };
+
+      socket.onclose = () => {
+        console.log('WebSocket connection closed. Reconnecting in 3 seconds...');
+        reconnectionTimeout = setTimeout(connectWebSocket, 3000);
+      };
+
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        socket?.close();
+      };
+    };
+
+    connectWebSocket();
+
+    return () => {
+      if (socket) {
+        socket.onclose = null; // Prevent reconnection attempt on unmount
+        socket.close();
+      }
+      if (reconnectionTimeout) clearTimeout(reconnectionTimeout);
+    };
   }, [fetchChecks]);
 
   const getStatusIcon = (status: IPCheckItem['task_status']) => {

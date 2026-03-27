@@ -2,10 +2,12 @@
 Tests for background worker tasks.
 """
 
+import json
 import uuid
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from public_api.models import IPCheck
 from public_api.tasks import process_ip_check, get_virustotal_report, get_gemini_verdict
 
@@ -53,7 +55,7 @@ def test_get_gemini_verdict_failure(caplog):
         assert "Requesting Gemini verdict for raw data for IP: 1.1.1.1" in caplog.text
 
 
-def test_process_ip_check_success(caplog):
+def test_process_ip_check_success(caplog, mock_redis):
     """Test successful processing of an IP check task."""
     ip_address = "1.1.1.1"
     record = IPCheck.create(ip_address=ip_address, task_status="pending")
@@ -71,6 +73,26 @@ def test_process_ip_check_success(caplog):
 
         mock_get_report.assert_called_once_with(ip_address)
         mock_get_verdict.assert_called_once_with(mock_report)
+
+        # Verify Redis publish was called twice: once for 'processing' and once for 'success'
+        assert mock_redis.publish.call_count == 2
+
+        # 1. Processing update
+        args_proc, _ = mock_redis.publish.call_args_list[0]
+        assert args_proc[0] == "ip_check_status_updates"
+        data_proc = json.loads(args_proc[1])
+        assert data_proc["task_status"] == "processing"
+        assert data_proc["id"] == record_id
+
+        # 2. Success update
+        args_succ, _ = mock_redis.publish.call_args_list[1]
+        assert args_succ[0] == "ip_check_status_updates"
+        data_succ = json.loads(args_succ[1])
+        assert data_succ["task_status"] == "success"
+        assert data_succ["raw_data"] == mock_report
+        assert data_succ["verdict"] == mock_verdict
+        assert data_succ["id"] == record_id
+
         updated_record = IPCheck.get_by_id(record.id)
         assert updated_record.task_status == "success"
         assert updated_record.raw_data == mock_report
@@ -82,7 +104,7 @@ def test_process_ip_check_success(caplog):
         )
 
 
-def test_process_ip_check_gemini_failure(caplog):
+def test_process_ip_check_gemini_failure(caplog, mock_redis):
     """Test task failure when the Gemini call fails."""
     ip_address = "1.1.1.1"
     record = IPCheck.create(ip_address=ip_address, task_status="pending")
@@ -99,10 +121,28 @@ def test_process_ip_check_gemini_failure(caplog):
 
         updated_record = IPCheck.get_by_id(record.id)
         assert updated_record.task_status == "failed"
+
+        # Verify Redis publish was called twice: once for 'processing' and once for 'failed'
+        assert mock_redis.publish.call_count == 2
+
+        # 1. Processing update
+        args_proc, _ = mock_redis.publish.call_args_list[0]
+        assert args_proc[0] == "ip_check_status_updates"
+        data_proc = json.loads(args_proc[1])
+        assert data_proc["task_status"] == "processing"
+        assert data_proc["id"] == record_id
+
+        # 2. Failure update
+        args_fail, _ = mock_redis.publish.call_args_list[1]
+        assert args_fail[0] == "ip_check_status_updates"
+        data_fail = json.loads(args_fail[1])
+        assert data_fail["task_status"] == "failed"
+        assert data_fail["id"] == record_id
+
         assert f"Failed to process IP {ip_address}: Gemini Error" in caplog.text
 
 
-def test_process_ip_check_api_failure(caplog):
+def test_process_ip_check_api_failure(caplog, mock_redis):
     """Test task failure when the API call fails."""
     ip_address = "1.1.1.1"
     record = IPCheck.create(ip_address=ip_address, task_status="pending")
@@ -115,6 +155,24 @@ def test_process_ip_check_api_failure(caplog):
 
         updated_record = IPCheck.get_by_id(record.id)
         assert updated_record.task_status == "failed"
+
+        # Verify Redis publish was called twice: once for 'processing' and once for 'failed'
+        assert mock_redis.publish.call_count == 2
+
+        # 1. Processing update
+        args_proc, _ = mock_redis.publish.call_args_list[0]
+        assert args_proc[0] == "ip_check_status_updates"
+        data_proc = json.loads(args_proc[1])
+        assert data_proc["task_status"] == "processing"
+        assert data_proc["id"] == record_id
+
+        # 2. Failure update
+        args_fail, _ = mock_redis.publish.call_args_list[1]
+        assert args_fail[0] == "ip_check_status_updates"
+        data_fail = json.loads(args_fail[1])
+        assert data_fail["task_status"] == "failed"
+        assert data_fail["id"] == record_id
+
         assert f"Failed to process IP {ip_address}: API Error" in caplog.text
 
 

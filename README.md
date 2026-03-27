@@ -11,21 +11,25 @@ The system is built with a distributed architecture to handle time-consuming API
 ```mermaid
 graph TD
     UI["Frontend (React)"] -- "POST /ip/check" --> API["Backend (FastAPI)"]
+    UI -- "GET /ip/list" --> API
     API -- "Create Record" --> DB[("SQLite")]
     API -- "Enqueue Task" --> Redis[("Redis")]
     Redis -- "Fetch Task" --> Worker["Background Worker (RQ)"]
     Worker -- "Fetch Report" --> VT["VirusTotal API"]
     Worker -- "Get AI Verdict" --> Gemini["Google Gemini API"]
     Worker -- "Update Record" --> DB
-    UI -- "Poll Status/Result" --> API
+    Worker -- "Publish Update on Status" --> Redis
+    Redis -- "Pub/Sub Broadcast on Status Update" --> API
+    UI -- "WebSocket Connection for Status Update" --> API
 ```
 
 ## 🚀 Key Features
 
 - **Asynchronous Processing**: High-performance background task execution using Redis and RQ.
 - **Deep Security Analysis**: Integration with **VirusTotal** for historical reputation data.
-- **AI-Powered Verdicts**: Uses **Google Gemini 2.5 Flash** to analyze raw security data and provide human-readable risk assessments.
-- **Modern UI**: A sleek, responsive React interface built with TypeScript and Vite.
+- **AI-Powered Verdicts**: Uses **Google Gemini 2.5 Flash** (gemini-2.5-flash) to analyze raw security data and provide human-readable risk assessments.
+- **Real-time Updates**: Instant UI refreshes via **WebSockets** with built-in automatic reconnection logic for maximum reliability.
+- **Modern UI**: A sleek, responsive React interface built with TypeScript, Vite, and custom Glassmorphism.
 - **Developer First**: Fully containerized with Docker, type-checked, and linted.
 
 ## 🛠️ Tech Stack
@@ -37,10 +41,10 @@ graph TD
 - **Dependencies**: Poetry
 
 ### Frontend
-- **Framework**: React 18
+- **Framework**: React 19
 - **Language**: TypeScript
 - **Build Tool**: Vite
-- **Styling**: Tailwind CSS / Custom Glassmorphism
+- **Styling**: Vanilla CSS / Custom Glassmorphism
 
 ---
 
@@ -49,6 +53,8 @@ graph TD
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
+- [Poetry](https://python-poetry.org/docs/#installation)
+- [Node.js](https://nodejs.org/) & [npm](https://www.npmjs.com/)
 
 ### Environment Setup
 
@@ -58,7 +64,23 @@ graph TD
    cd eo-py-coding-challenge
    ```
 
-2. **Configure Environment Variables**:
+2. **Setup Local Environment (IDE Autocompletion) - optional**:
+   Ensure you have the dependencies installed locally for full IDE support (Linting, Autocomplete, Type checking):
+   ```bash
+   # Backend
+   # Ensure Poetry creates venv in project
+   # Best if added to ~/.bashrc
+   poetry config virtualenvs.in-project true
+   cd public_api && poetry install
+   
+   # Frontend
+   cd ../user_interface && npm install
+   
+   # Return to root
+   cd ..
+   ```
+
+3. **Configure Environment Variables**:
    Copy the example environment file and add your API keys:
    ```bash
    cp .env.example .env
@@ -106,6 +128,7 @@ docker compose up --build -d
 | **Lint Backend** | `docker compose exec public-api poetry run python scripts.py lint` |
 | **Format Backend**| `docker compose exec public-api poetry run python scripts.py format` |
 | **Lint Frontend** | `docker compose exec user-interface npm run lint` |
+| **Pre-commit Hooks** | `pre-commit run --all-files` |
 
 ---
 

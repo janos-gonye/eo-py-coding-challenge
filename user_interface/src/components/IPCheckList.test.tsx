@@ -2,10 +2,28 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { IPCheckList } from './IPCheckList';
 
-// Mock apiUtils to avoid dependence on environment constants
+// Mock apiUtils to include getWebSocketUrl
 vi.mock('../utils/apiUtils', () => ({
   getServerUrl: () => 'http://localhost:8000',
+  getWebSocketUrl: () => 'ws://localhost:8000/ws',
 }));
+
+// Mock WebSocket
+class MockWebSocket {
+  onmessage: ((event: MessageEvent) => void) | null = null;
+  onclose: (() => void) | null = null;
+  onerror: ((error: Event) => void) | null = null;
+  send = vi.fn();
+  close = vi.fn();
+  url: string;
+  constructor(url: string) {
+    this.url = url;
+    MockWebSocket.instances.push(this);
+  }
+  static instances: MockWebSocket[] = [];
+}
+
+vi.stubGlobal('WebSocket', MockWebSocket);
 
 describe('IPCheckList Component', () => {
   const mockChecks = [
@@ -26,6 +44,7 @@ describe('IPCheckList Component', () => {
   ];
 
   beforeEach(() => {
+    MockWebSocket.instances = [];
     vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
       Promise.resolve(new Response(JSON.stringify(mockChecks), { status: 200 }))
     );
@@ -68,31 +87,30 @@ describe('IPCheckList Component', () => {
     });
   });
 
-  it('polls for updates every second', async () => {
-    // Enable fake timers BEFORE render so setInterval is captured
+  it('reconnects after 3 seconds when connection is closed', async () => {
     vi.useFakeTimers();
-    const fetchSpy = vi.spyOn(globalThis, 'fetch');
-
     render(<IPCheckList />);
 
-    // Initial fetch happens on mount. We need to flush the microtasks.
-    await vi.runAllTicks();
+    // Initial connection should happen immediately in useEffect
+    expect(MockWebSocket.instances.length).toBe(1);
+    const firstInstance = MockWebSocket.instances[0];
 
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-
-    // Advance time by one second AND flush microtasks
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(1000);
+    // Simulate close
+    act(() => {
+      if (firstInstance.onclose) firstInstance.onclose();
     });
 
-    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    // Should not have reconnected immediately
+    expect(MockWebSocket.instances.length).toBe(1);
 
-    // Advance time by another second
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(1000);
+    // Advance time by 3 seconds
+    act(() => {
+      vi.advanceTimersByTime(3000);
     });
 
-    expect(fetchSpy).toHaveBeenCalledTimes(3);
+    // Should have reconnected
+    expect(MockWebSocket.instances.length).toBe(2);
+    vi.useRealTimers();
   });
 
   it('handles fetch errors gracefully', async () => {
@@ -106,5 +124,39 @@ describe('IPCheckList Component', () => {
     });
 
     consoleSpy.mockRestore();
+  });
+
+  it('adds a new item received via WebSocket if not already in the list', async () => {
+    // Initial fetch returns empty list
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify([]), { status: 200 })
+    );
+
+    render(<IPCheckList />);
+
+    // Wait for loading to finish and show empty state
+    await waitFor(() => {
+      expect(screen.getByText(/no ip checks yet/i)).toBeInTheDocument();
+    });
+
+    // Simulate receiving a new item via WebSocket
+    const newItem = {
+      id: 'new-id',
+      ip_address: '1.2.3.4',
+      verdict: null,
+      task_status: 'pending',
+      created_at: new Date().toISOString(),
+    };
+
+    act(() => {
+      const socketInstance = MockWebSocket.instances[0];
+      if (socketInstance.onmessage) {
+        socketInstance.onmessage(new MessageEvent('message', { data: JSON.stringify(newItem) }));
+      }
+    });
+
+    // Verify it appears in the list
+    expect(screen.getByText('1.2.3.4')).toBeInTheDocument();
+    expect(screen.queryByText(/no ip checks yet/i)).not.toBeInTheDocument();
   });
 });
