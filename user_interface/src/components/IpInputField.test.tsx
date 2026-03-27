@@ -77,12 +77,12 @@ describe('IpInputField Server Requests', () => {
     vi.restoreAllMocks();
   });
 
-  it('shows a success popup when the server responds with ok', async () => {
+  it('shows a success popup and clears the input when the server responds with ok', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       new Response(JSON.stringify({ task_status: 'processing' }), { status: 202 }),
     );
 
-    render(<IpInputField />);
+    const { container } = render(<IpInputField />);
     const input = screen.getByPlaceholderText('IP address');
     fireEvent.change(input, { target: { value: '192.168.1.1' } });
 
@@ -92,6 +92,10 @@ describe('IpInputField Server Requests', () => {
     await waitFor(() => {
       expect(screen.getByText('IP address check started successfully.')).toBeInTheDocument();
     });
+
+    expect(input).toHaveValue('');
+    const iconContainer = container.querySelector('.icon-container');
+    expect(iconContainer?.children.length).toBe(0);
   });
 
   it('shows an error popup when the server responds with a non-ok status', async () => {

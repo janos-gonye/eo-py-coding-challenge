@@ -36,6 +36,8 @@ export function IpInputField() {
       const data = await response.json();
       if (response.ok) {
         setPopup({ type: 'success', message: 'IP address check started successfully.' });
+        setIpAddress('');
+        setTouched(false);
       } else {
         const detail = Array.isArray(data.detail)
           ? data.detail.map((d: { msg: string }) => d.msg).join(' ')
@@ -57,40 +59,40 @@ export function IpInputField() {
         />
       )}
       <div className="input-row">
-      <div className="input-wrapper">
-        <input
-          type="text"
-          className={`ip-input ${touched ? (valid ? 'valid' : 'invalid') : ''}`}
-          placeholder="IP address"
-          value={ipAddress}
-          onChange={handleInputChange}
-        />
-        <div className="icon-container">
-          {touched && ipAddress !== '' && (
-            valid ? (
-              <svg className="icon success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-              </svg>
-            ) : (
-              <svg className="icon error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            )
-          )}
+        <div className="input-wrapper">
+          <input
+            type="text"
+            className={`ip-input ${touched ? (valid ? 'valid' : 'invalid') : ''}`}
+            placeholder="IP address"
+            value={ipAddress}
+            onChange={handleInputChange}
+          />
+          <div className="icon-container">
+            {touched && ipAddress !== '' && (
+              valid ? (
+                <svg className="icon success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="icon error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )
+            )}
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={handleSendRequest}
+          disabled={!valid || ipAddress === ''}
+          className="send-button"
+        >
+          <svg className="send-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+          <span>Send</span>
+        </button>
       </div>
-      <button
-        type="button"
-        onClick={handleSendRequest}
-        disabled={!valid || ipAddress === ''}
-        className="send-button"
-      >
-        <svg className="send-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-        </svg>
-        <span>Send</span>
-      </button>
-    </div>
     </>
   );
 }
