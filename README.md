@@ -72,6 +72,8 @@ graph TD
    # Best if added to ~/.bashrc
    poetry config virtualenvs.in-project true
    cd public_api && poetry install
+   source .venv/bin/activate
+   poetry run pre-commit install --config ../.pre-commit-config.yaml
    
    # Frontend
    cd ../user_interface && npm install
